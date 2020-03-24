@@ -1,0 +1,8 @@
+endpoint: https://eu1.prisma.sh/rhkdgns9489-b90313/careda/dev
+datamodel: 
+  - ./entities/user.prisma
+  - ./entities/payment.prisma
+
+generate:
+  - generator: typescript-client
+    output: ./generated/prisma-client/

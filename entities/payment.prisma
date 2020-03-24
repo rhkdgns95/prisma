@@ -1,0 +1,32 @@
+enum PaymentStatus {
+  WAIT
+  ACCEPTED
+  CANCELED
+}
+
+type Payment {
+  id: ID! @id
+  tok: PaymentStatus! @default(value: WAIT) 
+  tnumber: Int
+  mname: String
+  mid: String
+  spay: Int! @default(value: 0)
+  trno: String 
+  reg_date: DateTime! @default(value: "2000-01-01")
+  pay_dtm: DateTime! @default(value: "2000-01-01")
+  content: String
+  bpay: Int! @default(value: 0)
+  qpay: Int! @default(value: 0)
+  brefund: Int! @default(value: 0)
+  qrefund: Int! @default(value: 0)
+  accea: Int! @default(value: 0)
+  qaccea: Int! @default(value: 0)
+  req_day: DateTime
+  req_qday: DateTime
+  endday: DateTime! @default(value: "2000-01-01")
+  qendday: DateTime! @default(value: "2000-01-01")
+  msg2: String
+
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+}
