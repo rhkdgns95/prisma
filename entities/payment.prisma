@@ -6,6 +6,7 @@ enum PaymentStatus {
 
 type Payment {
   id: ID! @id
+  
   tok: PaymentStatus! @default(value: WAIT) 
   tnumber: Int
   mname: String
