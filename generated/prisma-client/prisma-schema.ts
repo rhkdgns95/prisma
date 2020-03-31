@@ -500,6 +500,12 @@ type Subscription {
 type User {
   id: ID!
   name: String!
+  birthday: Int!
+  position: String!
+  startWorkedAt: DateTime!
+  endWorkedAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
 type UserConnection {
@@ -511,6 +517,10 @@ type UserConnection {
 input UserCreateInput {
   id: ID
   name: String!
+  birthday: Int!
+  position: String!
+  startWorkedAt: DateTime!
+  endWorkedAt: DateTime
 }
 
 type UserEdge {
@@ -523,11 +533,29 @@ enum UserOrderByInput {
   id_DESC
   name_ASC
   name_DESC
+  birthday_ASC
+  birthday_DESC
+  position_ASC
+  position_DESC
+  startWorkedAt_ASC
+  startWorkedAt_DESC
+  endWorkedAt_ASC
+  endWorkedAt_DESC
+  createdAt_ASC
+  createdAt_DESC
+  updatedAt_ASC
+  updatedAt_DESC
 }
 
 type UserPreviousValues {
   id: ID!
   name: String!
+  birthday: Int!
+  position: String!
+  startWorkedAt: DateTime!
+  endWorkedAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
 type UserSubscriptionPayload {
@@ -550,10 +578,18 @@ input UserSubscriptionWhereInput {
 
 input UserUpdateInput {
   name: String
+  birthday: Int
+  position: String
+  startWorkedAt: DateTime
+  endWorkedAt: DateTime
 }
 
 input UserUpdateManyMutationInput {
   name: String
+  birthday: Int
+  position: String
+  startWorkedAt: DateTime
+  endWorkedAt: DateTime
 }
 
 input UserWhereInput {
@@ -585,6 +621,60 @@ input UserWhereInput {
   name_not_starts_with: String
   name_ends_with: String
   name_not_ends_with: String
+  birthday: Int
+  birthday_not: Int
+  birthday_in: [Int!]
+  birthday_not_in: [Int!]
+  birthday_lt: Int
+  birthday_lte: Int
+  birthday_gt: Int
+  birthday_gte: Int
+  position: String
+  position_not: String
+  position_in: [String!]
+  position_not_in: [String!]
+  position_lt: String
+  position_lte: String
+  position_gt: String
+  position_gte: String
+  position_contains: String
+  position_not_contains: String
+  position_starts_with: String
+  position_not_starts_with: String
+  position_ends_with: String
+  position_not_ends_with: String
+  startWorkedAt: DateTime
+  startWorkedAt_not: DateTime
+  startWorkedAt_in: [DateTime!]
+  startWorkedAt_not_in: [DateTime!]
+  startWorkedAt_lt: DateTime
+  startWorkedAt_lte: DateTime
+  startWorkedAt_gt: DateTime
+  startWorkedAt_gte: DateTime
+  endWorkedAt: DateTime
+  endWorkedAt_not: DateTime
+  endWorkedAt_in: [DateTime!]
+  endWorkedAt_not_in: [DateTime!]
+  endWorkedAt_lt: DateTime
+  endWorkedAt_lte: DateTime
+  endWorkedAt_gt: DateTime
+  endWorkedAt_gte: DateTime
+  createdAt: DateTime
+  createdAt_not: DateTime
+  createdAt_in: [DateTime!]
+  createdAt_not_in: [DateTime!]
+  createdAt_lt: DateTime
+  createdAt_lte: DateTime
+  createdAt_gt: DateTime
+  createdAt_gte: DateTime
+  updatedAt: DateTime
+  updatedAt_not: DateTime
+  updatedAt_in: [DateTime!]
+  updatedAt_not_in: [DateTime!]
+  updatedAt_lt: DateTime
+  updatedAt_lte: DateTime
+  updatedAt_gt: DateTime
+  updatedAt_gte: DateTime
   AND: [UserWhereInput!]
   OR: [UserWhereInput!]
   NOT: [UserWhereInput!]
