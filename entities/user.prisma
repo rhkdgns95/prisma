@@ -1,6 +1,12 @@
 type User {
   id: ID! @id
   name: String!
+  birthday: Int!
+  position: String!
 
-  
+  startWorkedAt: DateTime!
+  endWorkedAt: DateTime @default(value: "2000-01-01")
+
+  createdAt: DateTime! @createdAt 
+  updatedAt: DateTime! @updatedAt
 }
