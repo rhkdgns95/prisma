@@ -1,0 +1,823 @@
+import React from 'react';
+import { View, StyleSheet, Document, Page, Text, PDFViewer, Font } from "@react-pdf/renderer";
+import { addComma } from '../../../../Utils/addComma';
+
+// import { data } from './data';
+
+interface IProps {
+  employees: Array<IEmployee>;
+  isLandscape: boolean;
+  header?: string;
+  footer?: string;
+  employeeCnt: number;  
+}
+
+interface ITbodyCol {
+  isEven: boolean;           // 행이 짝수번째인지 여부
+  employee: IEmployee;
+}
+
+interface ITableResult {
+  employees: Array<IEmployee>;
+}
+
+
+const positionItems: Array<string> = [
+  "원장",       // 0
+  "보조교사",   // 1
+  "보육교사",   // 2
+  "조리사",     // 3
+  "운전기사",   // 4
+  "기타"        // 5
+];
+
+/**
+ * 줄바꿈이 이루어지는 경우, - 표시로 문장을 이어버림.
+ */
+const hyphenationCallback = (word: any) => {
+  const middle = Math.floor(word.length / 2);
+  const parts = word.length === 1 ? [word] : [word.substr(0, middle), word.substr(middle)];
+
+  // Check console to see words parts
+  // console.log(word, parts);
+
+  return parts;
+};
+
+Font.register({
+  
+  family: 'Nanum Gothic',
+  src: '/NanumGothic-Regular.ttf',
+  fonts: [
+    {
+      src: '/NanumGothic-Bold.ttf',
+      fontStyle: 'normal',
+      fontWeight: 'bold'
+    },
+    {
+      src: '/NanumGothic-ExtraBold.ttf',
+      fontStyle: 'normal',
+      fontWeight: 'extrabold'
+    }
+  ]
+});
+Font.registerHyphenationCallback(hyphenationCallback);
+// Font.registerHyphenationCallback(word => [word]);
+
+const styles = StyleSheet.create({
+  header: {
+    fontFamily: 'Nanum Gothic',
+    fontSize: 12,
+    marginBottom: 20,
+    textAlign: 'center',
+    color: 'gray'
+  },
+  footer: {
+    fontFamily: 'Nanum Gothic',
+    fontSize: 12,
+    marginTop: 20,
+    marginBottom: 20,
+    textAlign: 'center',
+    color: 'gray',
+  },
+  pageNumber: {
+    position: 'absolute',
+    fontSize: 10,
+    bottom: 15,
+    left: 0,
+    right: 0,
+    textAlign: 'center',
+    color: 'grey',
+  },
+  body: {
+    fontFamily: 'Nanum Gothic',
+    paddingTop: 35,
+    paddingBottom: 75,
+    paddingHorizontal: 35,
+    width: '100%',
+  },
+  table: {
+    display: 'table' as any,
+    width: "auto",
+    borderStyle: "solid",
+    borderColor: 'black',
+    borderWidth: 1,
+    borderLeftWidth: 0,
+    borderBottomWidth: 0,
+  },
+
+  tableColHeader: {
+    width: "20%",
+    borderStyle: "solid",
+    borderColor: '#bfbfbf',
+    borderBottomColor: '#000',
+    borderWidth: 1,
+    borderLeftWidth: 0,
+    borderTopWidth: 0,
+    fontWeight: 'bold'
+  },
+  tableCol: {
+    width: "20%",
+    borderStyle: "solid",
+    borderColor: '#bfbfbf',
+    borderWidth: 1,
+    borderLeftWidth: 0,
+    borderTopWidth: 0,
+    padding: "5px"
+  },
+  tableCellHeader: {
+    margin: "auto",
+    fontSize: 10,
+    fontWeight: 500
+  },
+  tableCell: {
+    margin: "auto",
+    fontSize: 10
+  },
+
+  tableRow: {
+    margin: "auto",
+    flexDirection: "row",
+    backgroundColor: '#bbbbbb',
+    fontSize: '8pt',
+    color: 'black'
+  },
+
+  tdCols: {
+    textAlign: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
+    fontSize: '8pt',
+    textOverflow: "hidden",
+    padding: 1,
+    color: "black",
+    // maxLines: 1     // 추가시 줄 바꿈가능한 수를 의미.
+  },
+  tdColsPay: {
+    textAlign: 'right',
+    height: 'auto',
+    flex: 1,
+    padding: 1,
+    alignItems: 'flex-end',
+    fontSize: '8pt',
+    textOverflow: "hidden",
+    color: "black",
+  },
+  tableResult: {
+    display: 'flex',
+    flexDirection: 'row',
+    fontSize: '8pt',
+    backgroundColor: '#dfdfdf'
+  },
+  tableResultCols: {
+    borderWidth: 1, 
+    borderRight: 0, 
+    borderTop: 0, 
+    borderColor: 'black', 
+    width: '100%',
+    textAlign: 'right',
+  }
+});
+
+
+const PdfPayroll: React.FC<IProps> = ({
+  employees,
+  isLandscape,
+  header,
+  footer,
+  employeeCnt,
+}) => {
+  const tableCnt: number = 4;
+  
+  var i = 0;
+  let data = [[]];
+
+  for(var i = 0; i <= Math.floor(employees.length / 4); i++) {
+    data[i] = Array.from({ length: 4 });
+  }
+  // const data =  [ ...Array.from({length: 10}, (_, count) => []) ];
+
+  console.log("DATA: ", data);
+  const pages: Array<Array<IEmployee>> = [[]];
+  
+  
+  Promise.all([
+      employees.map((item, key) => {
+        const pageIndex: number = Math.floor(key / tableCnt); // 페이지 인덱스
+        const tableIndex: number = key % 4;     // 페이지 안의 테이블 인덱스
+        console.log("pageIndex: ", pageIndex)
+        console.log("tableIndex: ", tableIndex);
+        // pages[tableIndex].push(item);
+        // pages[0][1] = item;
+        // pages[1][0]= item;
+        pages[pageIndex][tableIndex] = item;
+      })
+  ]);
+  
+
+  console.log("PAGES:" , pages);
+
+  return (
+    <PDFViewer style={{
+      width: "100%",
+      height: '100vh'
+    }}>
+      <Document>
+        {
+          pages.map((page, key2) => (
+            <Page key={key2} style={styles.body} size="A4" orientation={ isLandscape ? 'portrait' : 'landscape'}>
+              <>
+                {/* PDF Header */}
+                {/* { header && <Text style={styles.header} fixed>{ header }</Text> } */}
+                <TableTitle employeeCnt={employeeCnt}/>
+                <View style={styles.table}>
+                { <TheadCols /> }
+                {/* PDF Content */}
+                {
+                  page.map((employee, key) => 
+                    <View key={key} style={{ display: 'flex', flexDirection: 'column' }}>
+                      <TbodyCols 
+                        key={key} 
+                        isEven={key % 2 === 0} 
+                        employee={employee} 
+                      />
+                    </View>
+                  )
+                }
+                { key2 === pages.length - 1 && <TableResult employees={employees}/> }
+                </View> 
+                {/* PDF Footer */}
+                {/* { footer && <Text style={styles.footer} fixed>{ footer }</Text> } */}
+        
+                {/* PDF PageNumber */}
+                <Text 
+                  style={styles.pageNumber} 
+                  render={({ pageNumber, totalPages }) => (
+                    `${pageNumber} / ${totalPages}`
+                  )} 
+                  fixed 
+                />
+              </>
+            </Page>
+          ))
+        }
+       
+      </Document>
+    </PDFViewer>
+  );
+}
+
+const TableTitle: React.FC<{ employeeCnt: number }> = ({
+  employeeCnt
+}) => {
+
+  return (
+    <View style={{ 
+      width: '100%',
+      marginBottom: '7px',
+      display: 'flex',
+      flexDirection: 'row'
+    }}>
+      <View style={{
+        backgroundColor: "#0c1c48",
+        padding: '10px 8px',
+        borderWidth: 1,
+        borderColor: '#070e1f'
+      }}>
+        <Text style={{
+          color: 'white',
+          fontWeight: 'extrabold',
+          fontSize: '17pt',
+        }}>CAREDA</Text>
+      </View>
+      <View style={{
+        display: 'flex',
+        fontSize: '11pt',
+        flexDirection: 'column',
+        justifyContent: 'space-around',
+        marginLeft: '12pt',
+      }}>
+        <Text style={{  }}>기쁜소식 XXXX원 XXXX년 XX월 급여대장</Text>
+        <Text style={{  }}>총 { employeeCnt }명 : XX,XXX,XXX원 | 급여신고 { employeeCnt }명 : XX,XXX,XXX원 | 급여무신고 명 : X원</Text>
+      </View>
+    </View>
+  );
+};
+
+const TableResult: React.FC<ITableResult> = ({
+  employees 
+}) => {
+  /**
+   *   totalEmployee
+   * 
+   *   합계가 필요한 속성들을 연산하여 하나의 Employee객체를 생성하는데,
+   *   해당 객체에서 필요한 속성값(배열안의 객체에서 속성 값의 총 연산되어진 결과 값)만 가지고 사용하도록 함.
+   */
+  const totalEmployee: IEmployee = employees.reduce((prev: IEmployee, item: IEmployee) => { 
+    return { 
+      ...prev,
+      normalPay: prev.normalPay + item.normalPay,
+      positionPay: prev.positionPay + item.positionPay
+    }; 
+  });
+  const { normalPay: totalNormalPay, positionPay: totalPositionPay } = totalEmployee;
+
+  // const totalPositionPay: number = 
+
+  return (
+    <View style={ styles.tableResult }>
+      <View style={{ display: "flex", flex: 3, flexDirection: 'row' }}>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ textAlign: 'center' }}>합계</Text>
+        </View>
+      </View>
+      <View style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}>{ addComma(totalNormalPay) }</Text>
+        </View>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}>{ addComma(totalPositionPay) }</Text>
+        </View>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}>0</Text>
+        </View>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}> </Text>
+        </View>
+      </View>
+      <View style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}>기본급</Text>
+        </View>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}>BKD_직책수당</Text>
+        </View>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}>0</Text>
+        </View>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}> </Text>
+        </View>
+      </View>
+      <View style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}>기본급</Text>
+        </View>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}>BKD_직책수당</Text>
+        </View>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}>0</Text>
+        </View>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}> </Text>
+        </View>
+      </View>
+      <View style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}>기본급</Text>
+        </View>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}>BKD_직책수당</Text>
+        </View>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}>0</Text>
+        </View>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}> </Text>
+        </View>
+      </View>
+      <View style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}>기본급</Text>
+        </View>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}>BKD_직책수당</Text>
+        </View>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}>0</Text>
+        </View>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}> </Text>
+        </View>
+      </View>
+      <View style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}>기본급</Text>
+        </View>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}>BKD_직책수당</Text>
+        </View>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}>0</Text>
+        </View>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}> </Text>
+        </View>
+      </View>
+      <View style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}>기본급</Text>
+        </View>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}>BKD_직책수당</Text>
+        </View>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}>0</Text>
+        </View>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}> </Text>
+        </View>
+      </View>
+  
+      <View style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}>기본급</Text>
+        </View>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}>BKD_직책수당</Text>
+        </View>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}>0</Text>
+        </View>
+        <View style={ styles.tableResultCols }>
+          <Text style={{ flex: 1 }}> </Text>
+        </View>
+      </View>
+  
+      <View style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
+        <View style={{ borderWidth: 1, borderColor: 'black', borderRight: 0, borderTop: 0, textAlign: 'right', flex: 1 }}>
+          <Text>0</Text>
+        </View>
+      </View>
+      <View style={{ display: 'flex', flex: 1, flexDirection: 'column'  }}>
+        <View style={{ borderWidth: 1, borderColor: 'black', borderRight: 0, borderTop: 0, textAlign: 'right', flex: 1 }}>
+          <Text>0</Text>
+        </View>
+      </View>
+      <View style={{ display: 'flex', flex: 1, flexDirection: 'column'  }}>
+        <View style={{ borderWidth: 1, borderColor: 'black', borderRight: 0, borderTop: 0, textAlign: 'right', flex: 1 }}>
+          <Text>0</Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+const TheadCols: React.FC<any> = ({
+  
+}) => (
+  <>
+    {/* 윗줄 */}
+    <View style={styles.tableRow} fixed>
+      <View style={{ textAlign: 'center', display: 'flex', width: '100%', flexDirection: 'row', justifyContent: 'space-around', height: 30}}>
+        <View style={{ flex: 3, borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '100%' }}>
+          <Text>인적사항</Text>
+        </View>
+        <View style={{ flex: 5, height: '100%', display: 'flex', justifyContent: 'space-around' }}>
+          <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '50%' }}>
+            <Text>기본급여 및 제수당</Text>
+          </View>
+          <View style={{ display: 'flex', flexDirection: 'row', height: '50%' }}>
+            <View style={{ borderWidth: 1, borderColor: 'black', flex: 4, borderTopWidth: 0, borderRightWidth: 0, height: '100%' }}>
+              <Text>과세분</Text>
+            </View>
+            <View  style={{ borderWidth: 1, borderColor: 'black', flex: 1, borderTopWidth: 0, borderRightWidth: 0, height: '100%' }}>
+              <Text>비과세분</Text> 
+            </View>
+          </View>
+        </View>
+        <View style={{ flex: 4, height: '100%' }}>
+          <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '100%' }}>
+            <Text>공제 및 차감지급액</Text>
+          </View>
+        </View>
+        <View style={{ flex: 1, height: '100%' }}>
+          <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '100%' }}>
+            <Text>적립금</Text>
+          </View>
+        </View>
+        <View style={{ flex: 1, height: '100%' }}>
+           <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '100%' }}>
+            <Text>서명</Text>
+          </View>
+        </View>
+      </View>
+    </View>
+    {/* 아랫줄 */}
+    <View style={styles.tableRow} fixed>
+      <View style={{ textAlign: 'center', display: 'flex', width: '100%', flexDirection: 'row', justifyContent: 'space-around', height: '70px' }}>
+        <View style={{ flex: 1, height: '100%', borderColor: 'black', borderWidth: 1, borderTopWidth: 0, borderRightWidth: 0 }}>
+          <Text>사원번호</Text>
+        </View>
+        <View style={{ flex: 2, height: '100%', }}>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '50%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text>성명</Text>
+          </View>
+          <View style={{ display: 'flex', flexDirection: 'row', height: '25%' }}>
+            <View style={{ width: '50%', borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0 }}>
+              <Text>생년월일</Text>
+            </View>
+            <View style={{ width: '50%', borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0 }}>
+              <Text>반명</Text>
+            </View>
+          </View>
+          <View style={{ display: 'flex', flexDirection: 'row', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <View style={{ width: '50%', borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0 }}>
+              <Text>입사일</Text>
+            </View>
+            <View style={{ width: '50%', borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0 }}>
+              <Text>퇴사일</Text>
+            </View>
+          </View>
+        </View>
+        <View style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-around' }}>
+          <View style={{ flex: 1, borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text>기본급</Text>
+          </View>
+          <View style={{ flex: 1, borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text>직책수당</Text>
+          </View>
+          <View style={{ flex: 1, borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text> </Text>
+          </View>
+          <View style={{  flex: 1, borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text style={{ margin: 0, padding: 0 }}> </Text>
+          </View>
+        </View>
+        <View style={{ flex: 1, height: '100%', justifyContent: 'space-around' }}>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text>상여금</Text>
+          </View>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text>기타</Text>
+          </View>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text> </Text>
+          </View>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text> </Text>
+          </View>
+        </View>
+        <View style={{ flex: 1, justifyContent: 'space-around' }}>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text>제수당</Text>
+          </View>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text> </Text>
+          </View>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text> </Text>
+          </View>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text>과세분계</Text>
+          </View>
+        </View>
+        <View style={{ flex: 1 }}>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text>시간외수당</Text>
+          </View>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text> </Text>
+          </View>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text> </Text>
+          </View>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text>비과세분계</Text>
+          </View>
+        </View>
+        <View style={{ flex: 1 }}>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text>연말정산</Text>
+          </View>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text></Text>
+          </View>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text></Text>
+          </View>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text>지급액계</Text>
+          </View>
+        </View>
+        <View style={{ flex: 1 }}>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text>국민연금</Text>
+          </View>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text>장기요양보험</Text>
+          </View>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text>농특세</Text>
+          </View>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text></Text>
+          </View>
+        </View>
+        <View style={{ flex: 1 }}>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text>건강보험</Text>
+          </View>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text>소득세</Text>
+          </View>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text>기타</Text>
+          </View>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text></Text>
+          </View>
+        </View>
+        <View style={{ flex: 1 }}>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text>고용보험</Text>
+          </View>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text>주민세</Text>
+          </View>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text></Text>
+          </View>
+          <View style={{ borderWidth: 1, borderColor: 'black', height: '25%', borderTopWidth: 0, borderRightWidth: 0 }}>
+            <Text>공제액계</Text>
+          </View>
+        </View>
+        <View style={{ flex: 1, borderWidth: 1, borderColor: 'black', height: '100%', borderTopWidth: 0, borderRightWidth: 0 }}>
+          <Text>차감지급액</Text>
+        </View>
+        <View style={{ flex: 1, borderWidth: 1, borderColor: 'black', height: '100%', borderTopWidth: 0, borderRightWidth: 0 }}>
+          <Text>퇴직적립금</Text>
+        </View>
+        <View style={{ flex: 1, borderWidth: 1, borderColor: 'black', height: '100%', borderTopWidth: 0, borderRightWidth: 0 }}>
+          <Text>수령서명</Text>
+        </View>
+      </View>
+    </View>
+  </>
+);
+
+const TbodyCols: React.FC<ITbodyCol> = ({ 
+  isEven,
+  employee
+}) => (
+  <View style={{ color: 'gray', display: 'flex', flexDirection: 'row', height: 58.5, margin: 'auto', width: '100%', borderWidth: .1, backgroundColor: isEven ? "" : "#f5f5f5" }} >
+    <View style={{ display: 'flex', height: '100%', flex: 1 }}>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '100%', flex: 1, width: '100%', flexDirection: 'row' }}>
+        <Text style={ styles.tdCols }>{ employee.id }</Text>
+      </View>
+    </View>
+    <View style={{ display: 'flex', height: '100%', flexDirection: 'column', flex: 1 }}>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '50%' }}>
+        <Text style={ styles.tdCols }>{ employee.name }</Text>
+      </View>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdCols }>{ employee.birthday }</Text>
+      </View>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdCols }>{ employee.startWorkedAt }</Text>
+      </View>
+    </View>
+    <View style={{ display: 'flex', height: '100%', flexDirection: 'column', flex: 1 }}>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '50%' }}>
+        <Text style={ styles.tdCols }>급여신고</Text>
+      </View>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdCols }>{ positionItems[parseInt(employee.position)] }</Text>
+      </View>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdCols }>{ employee.endWorkedAt }</Text>
+      </View>
+    </View>
+    <View style={{ display: 'flex', height: '100%', flexDirection: 'column', flex: 1 }}>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }>{ addComma(employee.normalPay) }</Text>
+      </View>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }>{ addComma(employee.positionPay) }</Text>
+      </View>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }></Text>
+      </View>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }></Text>
+      </View>
+    </View>
+    <View style={{ display: 'flex', height: '100%', flexDirection: 'column', flex: 1 }}>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }>0</Text>
+      </View>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }>0</Text>
+      </View>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }>0</Text>
+      </View>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }></Text>
+      </View>
+    </View>
+    <View style={{ display: 'flex', height: '100%', flexDirection: 'column', flex: 1 }}>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }>0</Text>
+      </View>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }>0</Text>
+      </View>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }>0</Text>
+      </View>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }>{ addComma(employee.normalPay + employee.positionPay) }</Text>
+      </View>
+    </View>
+    <View style={{ display: 'flex', height: '100%', flexDirection: 'column', flex: 1 }}>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }>0</Text>
+      </View>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }>0</Text>
+      </View>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }>0</Text>
+      </View>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }>0</Text>
+      </View>
+    </View>
+    <View style={{ display: 'flex', height: '100%', flexDirection: 'column', flex: 1 }}>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }>0</Text>
+      </View>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }>0</Text>
+      </View>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }>0</Text>
+      </View>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }>{ addComma(employee.normalPay + employee.positionPay) }</Text>
+      </View>
+    </View>
+    <View style={{ display: 'flex', height: '100%', flexDirection: 'column', flex: 1 }}>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }>BKD국민연금</Text>
+      </View>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }>BKD장기요양보험</Text>
+      </View>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }>0</Text>
+      </View>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }> </Text>
+      </View>
+    </View>
+    <View style={{ display: 'flex', height: '100%', flexDirection: 'column', flex: 1 }}>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }>BKD건강보험</Text>
+      </View>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }>BKD소득세</Text>
+      </View>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }>0</Text>
+      </View>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }> </Text>
+      </View>
+    </View>
+    <View style={{ display: 'flex', height: '100%', flexDirection: 'column', flex: 1 }}>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }>BKD고용보험</Text>
+      </View>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }>BKD주민세</Text>
+      </View>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }> </Text>
+      </View>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '25%' }}>
+        <Text style={ styles.tdColsPay }>BKD공제액계</Text>
+      </View>
+    </View>
+
+    <View style={{ display: 'flex', height: '100%', flexDirection: 'column', flex: 1 }}>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '100%' }}>
+        <Text style={ styles.tdColsPay }>BKD차감지급액</Text>
+      </View>
+    </View>
+    <View style={{ display: 'flex', height: '100%', flexDirection: 'column', flex: 1 }}>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '100%' }}>
+        <Text style={ styles.tdColsPay }>퇴직적립금</Text>
+      </View>
+    </View>
+    <View style={{ display: 'flex', height: '100%', flexDirection: 'column', flex: 1 }}>
+      <View style={{ borderWidth: 1, borderColor: 'black', borderTopWidth: 0, borderRightWidth: 0, height: '100%' }}>
+        <Text style={ styles.tdColsPay }> </Text>
+      </View>
+    </View>
+  </View>
+);
+
+export default PdfPayroll;
