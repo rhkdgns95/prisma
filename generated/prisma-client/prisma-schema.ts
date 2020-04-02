@@ -2,11 +2,11 @@
   // Please don't change this file manually but run `prisma generate` to update it.
   // For more information, please read the docs: https://www.prisma.io/docs/prisma-client/
 
-export const typeDefs = /* GraphQL */ `type AggregatePayment {
+export const typeDefs = /* GraphQL */ `type AggregateEmployee {
   count: Int!
 }
 
-type AggregateUser {
+type AggregatePayment {
   count: Int!
 }
 
@@ -16,21 +16,247 @@ type BatchPayload {
 
 scalar DateTime
 
+type Employee {
+  id: ID!
+  name: String!
+  birthday: DateTime!
+  position: Int!
+  startWorkedAt: DateTime!
+  endWorkedAt: DateTime
+  normalPay: Int!
+  positionPay: Int!
+  publish: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type EmployeeConnection {
+  pageInfo: PageInfo!
+  edges: [EmployeeEdge]!
+  aggregate: AggregateEmployee!
+}
+
+input EmployeeCreateInput {
+  id: ID
+  name: String!
+  birthday: DateTime!
+  position: Int!
+  startWorkedAt: DateTime!
+  endWorkedAt: DateTime
+  normalPay: Int!
+  positionPay: Int!
+  publish: Int!
+}
+
+type EmployeeEdge {
+  node: Employee!
+  cursor: String!
+}
+
+enum EmployeeOrderByInput {
+  id_ASC
+  id_DESC
+  name_ASC
+  name_DESC
+  birthday_ASC
+  birthday_DESC
+  position_ASC
+  position_DESC
+  startWorkedAt_ASC
+  startWorkedAt_DESC
+  endWorkedAt_ASC
+  endWorkedAt_DESC
+  normalPay_ASC
+  normalPay_DESC
+  positionPay_ASC
+  positionPay_DESC
+  publish_ASC
+  publish_DESC
+  createdAt_ASC
+  createdAt_DESC
+  updatedAt_ASC
+  updatedAt_DESC
+}
+
+type EmployeePreviousValues {
+  id: ID!
+  name: String!
+  birthday: DateTime!
+  position: Int!
+  startWorkedAt: DateTime!
+  endWorkedAt: DateTime
+  normalPay: Int!
+  positionPay: Int!
+  publish: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type EmployeeSubscriptionPayload {
+  mutation: MutationType!
+  node: Employee
+  updatedFields: [String!]
+  previousValues: EmployeePreviousValues
+}
+
+input EmployeeSubscriptionWhereInput {
+  mutation_in: [MutationType!]
+  updatedFields_contains: String
+  updatedFields_contains_every: [String!]
+  updatedFields_contains_some: [String!]
+  node: EmployeeWhereInput
+  AND: [EmployeeSubscriptionWhereInput!]
+  OR: [EmployeeSubscriptionWhereInput!]
+  NOT: [EmployeeSubscriptionWhereInput!]
+}
+
+input EmployeeUpdateInput {
+  name: String
+  birthday: DateTime
+  position: Int
+  startWorkedAt: DateTime
+  endWorkedAt: DateTime
+  normalPay: Int
+  positionPay: Int
+  publish: Int
+}
+
+input EmployeeUpdateManyMutationInput {
+  name: String
+  birthday: DateTime
+  position: Int
+  startWorkedAt: DateTime
+  endWorkedAt: DateTime
+  normalPay: Int
+  positionPay: Int
+  publish: Int
+}
+
+input EmployeeWhereInput {
+  id: ID
+  id_not: ID
+  id_in: [ID!]
+  id_not_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_gt: ID
+  id_gte: ID
+  id_contains: ID
+  id_not_contains: ID
+  id_starts_with: ID
+  id_not_starts_with: ID
+  id_ends_with: ID
+  id_not_ends_with: ID
+  name: String
+  name_not: String
+  name_in: [String!]
+  name_not_in: [String!]
+  name_lt: String
+  name_lte: String
+  name_gt: String
+  name_gte: String
+  name_contains: String
+  name_not_contains: String
+  name_starts_with: String
+  name_not_starts_with: String
+  name_ends_with: String
+  name_not_ends_with: String
+  birthday: DateTime
+  birthday_not: DateTime
+  birthday_in: [DateTime!]
+  birthday_not_in: [DateTime!]
+  birthday_lt: DateTime
+  birthday_lte: DateTime
+  birthday_gt: DateTime
+  birthday_gte: DateTime
+  position: Int
+  position_not: Int
+  position_in: [Int!]
+  position_not_in: [Int!]
+  position_lt: Int
+  position_lte: Int
+  position_gt: Int
+  position_gte: Int
+  startWorkedAt: DateTime
+  startWorkedAt_not: DateTime
+  startWorkedAt_in: [DateTime!]
+  startWorkedAt_not_in: [DateTime!]
+  startWorkedAt_lt: DateTime
+  startWorkedAt_lte: DateTime
+  startWorkedAt_gt: DateTime
+  startWorkedAt_gte: DateTime
+  endWorkedAt: DateTime
+  endWorkedAt_not: DateTime
+  endWorkedAt_in: [DateTime!]
+  endWorkedAt_not_in: [DateTime!]
+  endWorkedAt_lt: DateTime
+  endWorkedAt_lte: DateTime
+  endWorkedAt_gt: DateTime
+  endWorkedAt_gte: DateTime
+  normalPay: Int
+  normalPay_not: Int
+  normalPay_in: [Int!]
+  normalPay_not_in: [Int!]
+  normalPay_lt: Int
+  normalPay_lte: Int
+  normalPay_gt: Int
+  normalPay_gte: Int
+  positionPay: Int
+  positionPay_not: Int
+  positionPay_in: [Int!]
+  positionPay_not_in: [Int!]
+  positionPay_lt: Int
+  positionPay_lte: Int
+  positionPay_gt: Int
+  positionPay_gte: Int
+  publish: Int
+  publish_not: Int
+  publish_in: [Int!]
+  publish_not_in: [Int!]
+  publish_lt: Int
+  publish_lte: Int
+  publish_gt: Int
+  publish_gte: Int
+  createdAt: DateTime
+  createdAt_not: DateTime
+  createdAt_in: [DateTime!]
+  createdAt_not_in: [DateTime!]
+  createdAt_lt: DateTime
+  createdAt_lte: DateTime
+  createdAt_gt: DateTime
+  createdAt_gte: DateTime
+  updatedAt: DateTime
+  updatedAt_not: DateTime
+  updatedAt_in: [DateTime!]
+  updatedAt_not_in: [DateTime!]
+  updatedAt_lt: DateTime
+  updatedAt_lte: DateTime
+  updatedAt_gt: DateTime
+  updatedAt_gte: DateTime
+  AND: [EmployeeWhereInput!]
+  OR: [EmployeeWhereInput!]
+  NOT: [EmployeeWhereInput!]
+}
+
+input EmployeeWhereUniqueInput {
+  id: ID
+}
+
 scalar Long
 
 type Mutation {
+  createEmployee(data: EmployeeCreateInput!): Employee!
+  updateEmployee(data: EmployeeUpdateInput!, where: EmployeeWhereUniqueInput!): Employee
+  updateManyEmployees(data: EmployeeUpdateManyMutationInput!, where: EmployeeWhereInput): BatchPayload!
+  upsertEmployee(where: EmployeeWhereUniqueInput!, create: EmployeeCreateInput!, update: EmployeeUpdateInput!): Employee!
+  deleteEmployee(where: EmployeeWhereUniqueInput!): Employee
+  deleteManyEmployees(where: EmployeeWhereInput): BatchPayload!
   createPayment(data: PaymentCreateInput!): Payment!
   updatePayment(data: PaymentUpdateInput!, where: PaymentWhereUniqueInput!): Payment
   updateManyPayments(data: PaymentUpdateManyMutationInput!, where: PaymentWhereInput): BatchPayload!
   upsertPayment(where: PaymentWhereUniqueInput!, create: PaymentCreateInput!, update: PaymentUpdateInput!): Payment!
   deletePayment(where: PaymentWhereUniqueInput!): Payment
   deleteManyPayments(where: PaymentWhereInput): BatchPayload!
-  createUser(data: UserCreateInput!): User!
-  updateUser(data: UserUpdateInput!, where: UserWhereUniqueInput!): User
-  updateManyUsers(data: UserUpdateManyMutationInput!, where: UserWhereInput): BatchPayload!
-  upsertUser(where: UserWhereUniqueInput!, create: UserCreateInput!, update: UserUpdateInput!): User!
-  deleteUser(where: UserWhereUniqueInput!): User
-  deleteManyUsers(where: UserWhereInput): BatchPayload!
 }
 
 enum MutationType {
@@ -483,114 +709,17 @@ input PaymentWhereUniqueInput {
 }
 
 type Query {
+  employee(where: EmployeeWhereUniqueInput!): Employee
+  employees(where: EmployeeWhereInput, orderBy: EmployeeOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [Employee]!
+  employeesConnection(where: EmployeeWhereInput, orderBy: EmployeeOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): EmployeeConnection!
   payment(where: PaymentWhereUniqueInput!): Payment
   payments(where: PaymentWhereInput, orderBy: PaymentOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [Payment]!
   paymentsConnection(where: PaymentWhereInput, orderBy: PaymentOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): PaymentConnection!
-  user(where: UserWhereUniqueInput!): User
-  users(where: UserWhereInput, orderBy: UserOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [User]!
-  usersConnection(where: UserWhereInput, orderBy: UserOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): UserConnection!
   node(id: ID!): Node
 }
 
 type Subscription {
+  employee(where: EmployeeSubscriptionWhereInput): EmployeeSubscriptionPayload
   payment(where: PaymentSubscriptionWhereInput): PaymentSubscriptionPayload
-  user(where: UserSubscriptionWhereInput): UserSubscriptionPayload
-}
-
-type User {
-  id: ID!
-  name: String!
-}
-
-type UserConnection {
-  pageInfo: PageInfo!
-  edges: [UserEdge]!
-  aggregate: AggregateUser!
-}
-
-input UserCreateInput {
-  id: ID
-  name: String!
-}
-
-type UserEdge {
-  node: User!
-  cursor: String!
-}
-
-enum UserOrderByInput {
-  id_ASC
-  id_DESC
-  name_ASC
-  name_DESC
-}
-
-type UserPreviousValues {
-  id: ID!
-  name: String!
-}
-
-type UserSubscriptionPayload {
-  mutation: MutationType!
-  node: User
-  updatedFields: [String!]
-  previousValues: UserPreviousValues
-}
-
-input UserSubscriptionWhereInput {
-  mutation_in: [MutationType!]
-  updatedFields_contains: String
-  updatedFields_contains_every: [String!]
-  updatedFields_contains_some: [String!]
-  node: UserWhereInput
-  AND: [UserSubscriptionWhereInput!]
-  OR: [UserSubscriptionWhereInput!]
-  NOT: [UserSubscriptionWhereInput!]
-}
-
-input UserUpdateInput {
-  name: String
-}
-
-input UserUpdateManyMutationInput {
-  name: String
-}
-
-input UserWhereInput {
-  id: ID
-  id_not: ID
-  id_in: [ID!]
-  id_not_in: [ID!]
-  id_lt: ID
-  id_lte: ID
-  id_gt: ID
-  id_gte: ID
-  id_contains: ID
-  id_not_contains: ID
-  id_starts_with: ID
-  id_not_starts_with: ID
-  id_ends_with: ID
-  id_not_ends_with: ID
-  name: String
-  name_not: String
-  name_in: [String!]
-  name_not_in: [String!]
-  name_lt: String
-  name_lte: String
-  name_gt: String
-  name_gte: String
-  name_contains: String
-  name_not_contains: String
-  name_starts_with: String
-  name_not_starts_with: String
-  name_ends_with: String
-  name_not_ends_with: String
-  AND: [UserWhereInput!]
-  OR: [UserWhereInput!]
-  NOT: [UserWhereInput!]
-}
-
-input UserWhereUniqueInput {
-  id: ID
 }
 `

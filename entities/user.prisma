@@ -1,11 +1,15 @@
-type User {
+type Employee {
   id: ID! @id
   name: String!
-  birthday: Int!
-  position: String!
+  birthday: DateTime!
+  position: Int!
 
   startWorkedAt: DateTime!
   endWorkedAt: DateTime @default(value: "2000-01-01")
+  
+  normalPay: Int!
+  positionPay: Int!
+  publish: Int!
 
   createdAt: DateTime! @createdAt 
   updatedAt: DateTime! @updatedAt
